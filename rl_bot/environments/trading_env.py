@@ -1,13 +1,35 @@
 from typing import List, Tuple, Deque, Any
 import random
 from collections import deque
+from enum import Enum
+from dataclasses import dataclass
+
 
 import numpy as np
 import pandas as pd
 from rich import print
 
 State = Any
-Action = Any
+
+class Action(Enum):
+    BUY = 1
+    HOLD = 0
+    SELL = -1
+
+    @classmethod
+    @property
+    def actions(cls) -> List[Enum]:
+        return [e for e in cls]
+
+    @classmethod
+    @property
+    def names(cls) -> List[str]:
+        return [e.name for e in cls]
+
+    @classmethod
+    @property
+    def values(cls) -> List[int]:
+        return [e.value for e in cls]
 
 
 class TradingEnv:
@@ -83,14 +105,14 @@ class TradingEnv:
             self.df.loc[self.current_step, 'Open'],
             self.df.loc[self.current_step, 'Close'])
         
-        if action == 0: # Hold
+        if action == Action.HOLD:
             pass 
-        elif action == 1 and self.balance > 0:
+        elif action == Action.BUY and self.balance > 0:
             # Buy with 100% of current balance
             self.crypto_bought = self.balance / current_price
             self.balance -= self.crypto_bought * current_price
             self.crypto_held += self.crypto_bought
-        elif action == 2 and self.crypto_held>0:
+        elif action == Action.SELL and self.crypto_held>0:
             # Sell 100% of current crypto held
             self.crypto_sold = self.crypto_held
             self.balance += self.crypto_sold * current_price
