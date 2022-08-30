@@ -31,6 +31,7 @@ optuna = "^2.10.1"
 streamlit = "^1.11.0"
 hydralit-components = "^1.0.10"
 pretty-errors = "^1.2.25"
+mplfinance = "^0.12.9-beta.1"
 
 [tool.poetry.dev-dependencies]
 

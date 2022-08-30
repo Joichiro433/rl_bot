@@ -17,4 +17,4 @@ if __name__ == '__main__':
     train_env = TradingEnv(df=train_df, lookback_window_size=lookback_window_size)
     test_env = TradingEnv(df=test_df, lookback_window_size=lookback_window_size)   
 
-    random_games(train_env, train_episodes = 10, training_batch_size=500)
+    random_games(train_env, visualize=True, train_episodes=1, training_batch_size=300)

@@ -1,14 +1,14 @@
-from sys import float_repr_style
-from typing import List, Tuple, Deque, Any
+from typing import List, Tuple, Deque
 import random
 from collections import deque
 from enum import Enum
 from dataclasses import dataclass
 
-
 import numpy as np
 import pandas as pd
 from rich import print
+
+from visualization.visualization import TradingGraph
 
 
 @dataclass(frozen=True)
@@ -58,12 +58,13 @@ class Action(Enum):
 
 class TradingEnv:
     """"A custom Bitcoin trading environment"""
-    def __init__(self, df: pd.DataFrame, initial_balance: float = 1000.0, lookback_window_size: int = 50) -> None:
+    def __init__(self, df: pd.DataFrame, initial_balance: float = 1000.0, lookback_window_size: int = 50, Render_range: int = 100) -> None:
         """Define action space and state size and other custom parameters"""
         self.df: pd.DataFrame = df.dropna().reset_index()
         self.df_total_steps: int = len(self.df)-1
         self.initial_balance: float = initial_balance
         self.lookback_window_size: int = lookback_window_size
+        self.Render_range = Render_range # render range in visualization
 
         # Action space from 0 to 3, 0 is hold, 1 is buy, 2 is sell
         self.action_space = np.array([0, 1, 2])
@@ -79,6 +80,9 @@ class TradingEnv:
 
     # Reset the state of the environment to an initial state
     def reset(self, env_steps_size: int = 0) -> State:
+        self.visualization = TradingGraph(Render_range=self.Render_range) # init visualization
+        self.trades = deque(maxlen=self.Render_range) # limited orders memory for visualization
+
         self.balance: float = self.initial_balance
         self.net_worth: float = self.initial_balance
         self.prev_net_worth: float = self.initial_balance
@@ -136,6 +140,9 @@ class TradingEnv:
         current_price = random.uniform(
             self.df.loc[self.current_step, 'Open'],
             self.df.loc[self.current_step, 'Close'])
+        Date = self.df.loc[self.current_step, 'Date'] # for visualization
+        High = self.df.loc[self.current_step, 'High'] # for visualization
+        Low = self.df.loc[self.current_step, 'Low'] # for visualization
         
         if action == Action.HOLD:
             pass 
@@ -144,11 +151,13 @@ class TradingEnv:
             self.crypto_bought = self.balance / current_price
             self.balance -= self.crypto_bought * current_price
             self.crypto_held += self.crypto_bought
-        elif action == Action.SELL and self.crypto_held>0:
+            self.trades.append({'Date' : Date, 'High' : High, 'Low' : Low, 'total': self.crypto_bought, 'type': "buy"})
+        elif action == Action.SELL and self.crypto_held > 0:
             # Sell 100% of current crypto held
             self.crypto_sold = self.crypto_held
             self.balance += self.crypto_sold * current_price
             self.crypto_held -= self.crypto_sold
+            self.trades.append({'Date' : Date, 'High' : High, 'Low' : Low, 'total': self.crypto_sold, 'type': "sell"})
 
         self.prev_net_worth = self.net_worth
         self.net_worth = self.balance + self.crypto_held * current_price
@@ -168,5 +177,15 @@ class TradingEnv:
         return obs, reward, done
 
     # render environment
-    def render(self) -> None:
+    def render(self, visualize: bool) -> None:
         print(f'Step: {self.current_step}, Net Worth: {self.net_worth}')
+        if visualize:
+            Date = self.df.loc[self.current_step, 'Date']
+            Open = self.df.loc[self.current_step, 'Open']
+            Close = self.df.loc[self.current_step, 'Close']
+            High = self.df.loc[self.current_step, 'High']
+            Low = self.df.loc[self.current_step, 'Low']
+            Volume = self.df.loc[self.current_step, 'Volume']
+
+            # Render the environment to the screen
+            self.visualization.render(Date, Open, High, Low, Close, Volume, self.net_worth, self.trades)

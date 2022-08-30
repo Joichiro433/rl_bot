@@ -1188,6 +1188,18 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "mplfinance"
+version = "0.12.9b1"
+description = "Utilities for the visualization, and visual analysis, of financial data"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+matplotlib = "*"
+pandas = "*"
+
+[[package]]
 name = "multimethod"
 version = "1.8"
 description = "Multiple argument dispatching."
@@ -2707,7 +2719,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.10"
-content-hash = "59c7c1ab4e4da9c7afad3c40fc65869b51984f2501cad48d43f9a3adbb49a180"
+content-hash = "06a43e8020b5211bbd5dbee40d4743e4ffeddc98963f38c1b7e5733a0839c757"
 
 [metadata.files]
 absl-py = []
@@ -3052,6 +3064,7 @@ matplotlib = []
 matplotlib-inline = []
 missingno = []
 mistune = []
+mplfinance = []
 multimethod = []
 nbclassic = []
 nbclient = []
